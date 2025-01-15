@@ -1,0 +1,60 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Déclenchement pour les tags de version (ex: v1.1.1)
+
+jobs:
+  release:
+    name: Release with GoReleaser
+    runs-on: ubuntu-latest
+
+    steps:
+      # Vérifier le dépôt
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Configurer Go
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20' # Version de Go compatible avec votre projet
+
+      # Exécuter GoReleaser
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest # Utiliser la dernière version de GoReleaser
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Nécessaire pour créer des artefacts GitHub
+
+  docker:
+    name: Build and Push Docker Image
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      # Vérifier le dépôt
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Connecter à Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Construire et pousser l'image Docker
+      - name: Build and Push Docker Image
+        run: |
+          # Extraire le tag de la version depuis l'événement GitHub
+          TAG=$(echo "${GITHUB_REF#refs/tags/}")
+          
+          # Construire l'image Docker
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${TAG} .
+          
+          # Pousser l'image sur Docker Hub
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${TAG}
