@@ -1,0 +1,35 @@
+name: Test Workflow
+
+on:
+  push: # Déclenché pour chaque événement de type push
+    branches:
+      - '**' # Surveille toutes les branches
+
+jobs:
+  run-tests:
+    name: Run Unit Tests on Multiple Go Versions
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.17, 1.18, 1.19] # Versions de Go à tester
+    steps:
+      # Vérifier le dépôt
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Configurer Go pour chaque version
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      # Installer les dépendances
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod download
+
+      # Exécuter les tests unitaires
+      - name: Run tests
+        run: |
+          go test ./... -v
