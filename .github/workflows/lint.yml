@@ -1,5 +1,5 @@
 name: Lint
-
+permissions: write/all
 on:
   pull_request:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 ##
 
       - name: Run semgrep
         uses: returntocorp/semgrep-action@v1
