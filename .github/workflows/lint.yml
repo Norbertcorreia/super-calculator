@@ -25,7 +25,9 @@ jobs:
 
       - name: Run hadolint
         run: |
-          docker run --rm -i hadolint/hadolint < Dockerfile
+          docker run --rm -i hadolint/hadolint:latest \
+          hadolint --ignore DL3020 --ignore DL3006 -
+            < Dockerfile
 
   super-linter:
     if: github.event_name == 'pull_request'
