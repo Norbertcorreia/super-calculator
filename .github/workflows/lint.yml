@@ -1,70 +1,38 @@
-name: Lint Workflow
+name: Lint
 
 on:
   pull_request:
   push:
-    branches:
-      - '**' # Surveille toutes les branches
-  workflow_dispatch: # Déclenchement manuel
+  workflow_dispatch:
 
 jobs:
   static-analysis:
-    name: Static Analysis with Semgrep
     runs-on: ubuntu-latest
-
     steps:
-      # Vérifier le dépôt
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Installer Semgrep
-      - name: Install Semgrep
-        run: |
-          curl -fsSL https://semgrep.dev/install.sh | sh
+      - name: Run semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
 
-      # Exécuter Semgrep avec les règles par défaut
-      - name: Run Semgrep
-        run: |
-          semgrep --config=p/ci --error
-
-  dockerfile-analysis:
-    name: Dockerfile Analysis with Hadolint
+  dockerfile-lint:
     runs-on: ubuntu-latest
-
     steps:
-      # Vérifier le dépôt
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Analyser le Dockerfile avec Hadolint
-      - name: Run Hadolint
+      - name: Run hadolint
         run: |
           docker run --rm -i hadolint/hadolint < Dockerfile
 
   super-linter:
-    name: Lint Code with Super-Linter
-    if: github.event_name == 'pull_request' # Exécuter uniquement pour les pull_requests
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-
     steps:
-      # Vérifier le dépôt
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configurer Super-Linter
-      - name: Run Super-Linter
-        uses: github/super-linter@v5
-        env:
-          VALIDATE_ALL_CODEBASE: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  super-calculator:
-    name: SuperCalculator 3
-    runs-on: ubuntu-latest
-
-    steps:
-      # Exécuter le calculateur personnalisé
-      - name: SuperCalculator Execution
-        run: |
-          echo "Running SuperCalculator 3..."
-          # Ajoutez ici le script ou commande spécifique à SuperCalculator 3
+      - name: Run super-linter
+        uses: github/super-linter@v4
