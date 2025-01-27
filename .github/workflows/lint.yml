@@ -1,5 +1,5 @@
 name: Lint
-permissions: write/all
+
 on:
   pull_request:
   push:
